@@ -22,6 +22,23 @@ class UserProfile(BaseModel):
     skills: list[str]
     projects: list[str]
 
+class UserCreate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    id: str = Field(min_length=1, max_length=100)
+    name: str = Field(min_length=1, max_length=200)
+    education: str = Field(min_length=1, max_length=300)
+    skills: list[str] = Field(default_factory=list)
+    projects: list[str] = Field(default_factory=list)
+
+
+class UserUpdate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    education: str | None = Field(default=None, min_length=1, max_length=300)
+    skills: list[str] | None = None
+    projects: list[str] | None = None
 
 class ContextResponse(BaseModel):
     """Complete context returned to the client."""
