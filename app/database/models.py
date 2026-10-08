@@ -2,7 +2,16 @@
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import (
+    JSON,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.connection import Base
@@ -119,3 +128,20 @@ class DocumentChunkRecord(Base):
     content: Mapped[str] = mapped_column(Text)
 
     document: Mapped[DocumentRecord] = relationship(back_populates="chunks")
+    embedding: Mapped["DocumentEmbeddingRecord | None"] = relationship(
+        back_populates="chunk",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+
+class DocumentEmbeddingRecord(Base):
+    __tablename__ = "document_embeddings"
+
+    chunk_id: Mapped[int] = mapped_column(
+        ForeignKey("document_chunks.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    vector: Mapped[list[float]] = mapped_column(JSON)
+
+    chunk: Mapped[DocumentChunkRecord] = relationship(back_populates="embedding")

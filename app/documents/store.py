@@ -3,8 +3,13 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.database.models import DocumentChunkRecord, DocumentRecord
+from app.database.models import (
+    DocumentChunkRecord,
+    DocumentEmbeddingRecord,
+    DocumentRecord,
+)
 from app.documents.chunker import chunk_text
+from app.documents.embeddings import embed_texts
 
 
 def create_document(
@@ -13,15 +18,23 @@ def create_document(
     title: str,
     content: str,
 ) -> DocumentRecord:
+    chunks = chunk_text(content)
+    vectors = embed_texts([f"{title}\n{chunk}" for chunk in chunks])
+
     document = DocumentRecord(
         user_id=user_id,
         title=title,
         content=content,
     )
-    document.chunks = [
-        DocumentChunkRecord(chunk_index=index, content=chunk)
-        for index, chunk in enumerate(chunk_text(content))
-    ]
+    document.chunks = []
+    for index, (chunk, vector) in enumerate(zip(chunks, vectors)):
+        document.chunks.append(
+            DocumentChunkRecord(
+                chunk_index=index,
+                content=chunk,
+                embedding=DocumentEmbeddingRecord(vector=vector),
+            )
+        )
 
     session.add(document)
     session.commit()
