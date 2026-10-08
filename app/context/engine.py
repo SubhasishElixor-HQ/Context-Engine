@@ -1,4 +1,4 @@
-"""Coordinate PostgreSQL collection and context assembly."""
+"""Coordinate data collection and context assembly."""
 
 from sqlalchemy.orm import Session
 
@@ -11,11 +11,29 @@ class ContextEngine:
     def __init__(self) -> None:
         self.builder = ContextBuilder()
 
-    def build(self, request: ContextRequest, session: Session) -> ContextResponse | None:
+    def build(
+        self,
+        request: ContextRequest,
+        session: Session,
+    ) -> ContextResponse | None:
         collector = ContextCollector(session)
+
         user = collector.get_user_profile(request.user_id)
+
         if user is None:
             return None
-        memories = collector.get_memories(request.user_id)
+
+        query = f"{request.goal} {request.task}"
+
+        memories = collector.get_memories(
+            request.user_id,
+            query,
+        )
         documents = collector.get_documents(request.user_id)
-        return self.builder.build(request, user, memories, documents)
+
+        return self.builder.build(
+            request,
+            user,
+            memories,
+            documents,
+        )
