@@ -1,4 +1,4 @@
-"""Coordinate data collection and context assembly."""
+"""Coordinate PostgreSQL collection and context assembly."""
 
 from sqlalchemy.orm import Session
 
@@ -19,7 +19,6 @@ class ContextEngine:
         collector = ContextCollector(session)
 
         user = collector.get_user_profile(request.user_id)
-
         if user is None:
             return None
 
@@ -29,7 +28,10 @@ class ContextEngine:
             request.user_id,
             query,
         )
-        documents = collector.get_documents(request.user_id)
+        documents = collector.get_documents(
+            request.user_id,
+            query,
+        )
 
         return self.builder.build(
             request,

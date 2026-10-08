@@ -1,9 +1,10 @@
-"""Read context data from the database."""
+"""Read context data from PostgreSQL through SQLAlchemy."""
 
 from sqlalchemy.orm import Session
 
 from app.context.schema import UserProfile
 from app.database.crud import get_user_record
+from app.documents.retriever import retrieve_document_chunks
 from app.memory.retriever import retrieve_relevant_memories
 
 
@@ -32,6 +33,9 @@ class ContextCollector:
             query,
         )
 
-    def get_documents(self, user_id: str) -> list[str]:
-        """Document search will be added in a later version."""
-        return []
+    def get_documents(self, user_id: str, query: str) -> list[str]:
+        return retrieve_document_chunks(
+            self.session,
+            user_id,
+            query,
+        )
